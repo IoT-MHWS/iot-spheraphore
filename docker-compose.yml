@@ -1,0 +1,14 @@
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: always
+    command:
+      - "--reload"
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend/app:/backend/app
+    environment:
+      WATCHFILES_FORCE_POLLING: true
