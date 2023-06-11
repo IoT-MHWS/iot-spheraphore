@@ -5,12 +5,14 @@ from fastapi import FastAPI
 from starlette.middleware.cors import CORSMiddleware
 
 from app.config import engine
+from app.models.cells_db import Cell
+from app.routes import cells_mub
 
 
 @asynccontextmanager
 async def lifespan(_: FastAPI) -> AsyncIterator[None]:
     await engine.configure_database(
-        [],
+        [Cell],
         update_existing_indexes=True,
     )
 
@@ -29,3 +31,5 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+app.include_router(cells_mub.router)

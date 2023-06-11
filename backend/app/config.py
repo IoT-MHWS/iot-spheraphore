@@ -8,4 +8,4 @@ file_directory: Path = Path.cwd()
 
 mongodb_url: str = getenv("MONGODB_URL", "mongodb://root:example@localhost:27017/")
 client: AsyncIOMotorClient = AsyncIOMotorClient(mongodb_url)
-engine: AIOEngine = AIOEngine(client=client, database="videos")
+engine: AIOEngine = AIOEngine(client=client, database="spheraphore")
