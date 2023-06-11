@@ -8,7 +8,7 @@ from starlette.middleware.cors import CORSMiddleware
 
 from app.common.config import engine, mqtt_service
 from app.models.cells_db import Cell
-from app.routes import cells_mub
+from app.routes import cells_mub, cells_rst
 
 
 @asynccontextmanager
@@ -43,3 +43,4 @@ app.add_middleware(
 )
 
 app.include_router(cells_mub.router)
+app.include_router(cells_rst.router)
