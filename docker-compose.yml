@@ -23,6 +23,15 @@ services:
       ME_CONFIG_MONGODB_ADMINPASSWORD: example
       ME_CONFIG_MONGODB_URL: mongodb://root:example@mongo:27017/
 
+  mosquitto:
+    image: eclipse-mosquitto:2.0.5
+    ports:
+      - "1883:1883"
+      - "9001:9001"
+    volumes:
+      - mosquitto-data:/mosquitto/data
+      - ./mosquitto.conf:/mosquitto/config/mosquitto.conf
+
   api:
     depends_on:
       - mongo
@@ -39,3 +48,6 @@ services:
     environment:
       WATCHFILES_FORCE_POLLING: true
       MONGODB_URL: mongodb://root:example@mongo:27017/
+
+volumes:
+  mosquitto-data:

@@ -1,10 +1,12 @@
-from contextlib import asynccontextmanager
-from typing import AsyncIterator
+from asyncio import CancelledError, get_event_loop
+from collections.abc import AsyncIterator
+from contextlib import asynccontextmanager, suppress
 
+from asyncio_mqtt import Client
 from fastapi import FastAPI
 from starlette.middleware.cors import CORSMiddleware
 
-from app.config import engine
+from app.common.config import engine, mqtt_service
 from app.models.cells_db import Cell
 from app.routes import cells_mub
 
@@ -16,9 +18,17 @@ async def lifespan(_: FastAPI) -> AsyncIterator[None]:
         update_existing_indexes=True,
     )
 
-    yield
+    async with Client("mosquitto") as mqtt_client:
+        mqtt_service.setup(client=mqtt_client)
 
-    pass
+        loop = get_event_loop()
+        task = loop.create_task(mqtt_service.listen())
+
+        yield
+
+        task.cancel()
+        with suppress(CancelledError):
+            await task
 
 
 # noinspection PyTypeChecker
