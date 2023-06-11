@@ -1,7 +1,7 @@
 from enum import Enum, auto
 from typing import Optional
 
-from odmantic import Model, EmbeddedModel
+from odmantic import EmbeddedModel, Model
 
 
 class Subject(EmbeddedModel):

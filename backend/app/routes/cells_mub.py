@@ -1,7 +1,7 @@
 from fastapi import APIRouter
 from pydantic import BaseModel
 
-from app.config import engine
+from app.common.config import engine
 from app.models.cells_db import Cell
 
 router = APIRouter(prefix="/admin/cells")
