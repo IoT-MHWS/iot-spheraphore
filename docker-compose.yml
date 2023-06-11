@@ -35,9 +35,11 @@ services:
   api:
     depends_on:
       - mongo
+      - mosquitto
     build:
       context: .
       dockerfile: Dockerfile
+    image: iot-mwhs/spheraphore
     restart: always
     command:
       - "--reload"
@@ -48,6 +50,24 @@ services:
     environment:
       WATCHFILES_FORCE_POLLING: true
       MONGODB_URL: mongodb://root:example@mongo:27017/
+      MOSQUITTO_HOST: mosquitto
+
+  client:
+    profiles:
+      - client
+    depends_on:
+      - mosquitto
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: iot-mwhs/spheraphore
+    restart: always
+    entrypoint: python -m app.client
+    volumes:
+      - ./backend/app:/backend/app
+    environment:
+      PYTHONBUFFERED: true
+      MOSQUITTO_HOST: mosquitto
 
 volumes:
   mosquitto-data:
