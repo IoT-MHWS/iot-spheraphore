@@ -25,7 +25,9 @@ class MQTTService:
         self.subscriptions.append(topic)
 
     def route(
-        self, topic: str, subscribe: bool = False
+        self,
+        topic: str,
+        subscribe: bool = True,
     ) -> Callable[[MQTTHandlerProtocol], None]:
         if subscribe:
             self.subscribe(topic)

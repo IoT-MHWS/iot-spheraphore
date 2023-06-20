@@ -44,7 +44,7 @@ app.include_router(cells_mub.router)
 app.include_router(cells_rst.router)
 
 
-@mqtt_service.route("test/put", subscribe=True)
+@mqtt_service.route("test/put")
 async def test_m(message: Message) -> None:
     logging.error(message.payload)
 
