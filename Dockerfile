@@ -12,6 +12,7 @@ COPY pyproject.toml poetry.lock ./
 RUN poetry install --no-interaction --no-ansi --only main
 
 COPY backend/common ./common
-COPY backend/app ./app
+ARG FOLDER=app
+COPY backend/$FOLDER ./$FOLDER
 
 ENTRYPOINT ["uvicorn", "app.main:app", "--host", "0.0.0.0"]

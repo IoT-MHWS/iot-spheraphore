@@ -1,4 +1,9 @@
 services:
+  map:
+    image: zubrailx/cws-map-runner:debug-latest
+    ports:
+      - "6000:8000"
+
   mongo:
     image: mongo:6.0.5-jammy
     restart: always
@@ -39,6 +44,8 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+      args:
+        FOLDER: app
     image: iot-mwhs/spheraphore
     restart: always
     command:
@@ -53,19 +60,22 @@ services:
       MONGODB_URL: mongodb://root:example@mongo:27017/
       MOSQUITTO_HOST: mosquitto
 
-  client:
+  echo:
     profiles:
-      - client
+      - echo
     depends_on:
       - mosquitto
     build:
       context: .
       dockerfile: Dockerfile
+      args:
+        FOLDER: devices
     image: iot-mwhs/spheraphore
     restart: always
-    entrypoint: python -m app.client
+    entrypoint: python -m devices.echo
     volumes:
-      - ./backend/app:/backend/app
+      - ./backend/common:/backend/common
+      - ./backend/devices:/backend/devices
     environment:
       PYTHONBUFFERED: true
       MOSQUITTO_HOST: mosquitto
