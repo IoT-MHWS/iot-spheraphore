@@ -40,4 +40,4 @@ class Cell(Model):
 
     subjects: Optional[list[Subject]] = None
 
-    devises: Optional[list[DeviceTypes]] = None
+    devices: Optional[list[DeviceTypes]] = None
