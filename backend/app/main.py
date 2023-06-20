@@ -3,7 +3,7 @@ from asyncio import CancelledError, get_event_loop
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager, suppress
 
-from asyncio_mqtt import Client, Message
+from asyncio_mqtt import Message
 from fastapi import FastAPI
 from starlette.middleware.cors import CORSMiddleware
 
@@ -19,17 +19,14 @@ async def lifespan(_: FastAPI) -> AsyncIterator[None]:
         update_existing_indexes=True,
     )
 
-    async with Client(hostname=mqtt_host) as mqtt_client:
-        mqtt_service.setup(client=mqtt_client)
+    loop = get_event_loop()
+    task = loop.create_task(mqtt_service.run_durable(mqtt_host=mqtt_host))
 
-        loop = get_event_loop()
-        task = loop.create_task(mqtt_service.listen())
+    yield
 
-        yield
-
-        task.cancel()
-        with suppress(CancelledError):
-            await task
+    task.cancel()
+    with suppress(CancelledError):
+        await task
 
 
 # noinspection PyTypeChecker

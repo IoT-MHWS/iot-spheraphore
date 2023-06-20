@@ -1,8 +1,9 @@
 import logging
+from asyncio import sleep
 from collections.abc import Callable
 from typing import Any, Protocol
 
-from asyncio_mqtt import Client, Message
+from asyncio_mqtt import Client, Message, MqttError
 from asyncio_mqtt.types import PayloadType
 
 
@@ -51,6 +52,26 @@ class MQTTService:
 
             async for message in messages:
                 await self._handle_one(message)
+
+    async def run_durable(
+        self,
+        mqtt_host: str,
+        interval: int = 10,
+        **subscribe_kwargs: Any,
+    ) -> None:
+        reconnecting: bool = False
+        while True:
+            try:
+                async with Client(hostname=mqtt_host) as mqtt_client:
+                    self.setup(client=mqtt_client)
+                    if reconnecting:
+                        reconnecting = False
+                        logging.error("Reconnection successful")
+                    await self.listen(**subscribe_kwargs)
+            except MqttError:
+                reconnecting = True
+                logging.error(f"Connection lost. Reconnecting in {interval} seconds...")
+                await sleep(interval)
 
     async def publish(self, topic: str, payload: PayloadType, **kwargs: Any) -> None:
         if self.client is None:
