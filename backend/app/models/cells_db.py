@@ -22,6 +22,12 @@ class LightMode(str, Enum):
     OFF = "off"
 
 
+class DeviceTypes(str, Enum):
+    TEMPERATURE_SENSOR = "temperature-sensor"
+    ILLUMINATION_SENSOR = "illumination-sensor"
+    CAMERA = "camera"
+
+
 class Cell(Model):
     x: int
     y: int
@@ -33,3 +39,5 @@ class Cell(Model):
     light_mode: Optional[LightMode] = None
 
     subjects: Optional[list[Subject]] = None
+
+    devises: Optional[list[DeviceTypes]] = None
