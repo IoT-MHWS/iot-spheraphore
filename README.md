@@ -1,28 +1,32 @@
 # IoT MHWS: Spheraphore
-## Install
+## Run project
+```
+docker-compose up -d
+```
+
+Первый запуск займёт до 10 минут из-за скачивания image-ей
+
+## How To Use
+После запуска проекта станут доступны интерфейсы:
+- [OpenAPI (дока и клиент)](http://localhost:8000/docs#/)
+- [Админка БД](http://localhost:8081/)
+
+Через первый можно узнать, как вызывать запросы, и даже отправлять их. Основное тут:
+- `POST /admin/cells`: зарегистрировать клетку карты в shperaphore
+- `PUT /admin/cells/<id>`: изменить клетку карты по id
+- `GET /api/cells`: получить список статусов всех клеток карты
+- `POST /test/mosquitto`: тестовое, лучше не дёргать
+
+Через второй можно изменять данные БД, учитывая:
+- Нужная БД называется `spheraphore` и появится после первой созданной клетки
+- Коллекция называется `cell` и содержит все созданные клетки
+- В коллекции можно менять данные, но они должны быть валидными
+- P.S. Да, проще и безопаснее через админский PUT-метод
+
+## Development setup
+### Install
 ```
 pip install poetry
 poetry install
 pre-commit install
-```
-
-### Docker Compose
-And a template docker-compose file:
-```yaml
-services:
-  app:
-    # depends_on:
-    #   - database
-    build:
-      context: .
-      dockerfile: Dockerfile
-    # image: 
-    restart: always
-    # command: ...
-    # ports:
-    #   - "8000:8000"
-    # volumes:
-    #   - ./<SOURCE>:/<WORKDIR>  # pass your files for quik-reload
-    # environment:
-    #   SECRET: local
 ```
