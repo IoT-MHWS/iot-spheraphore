@@ -1,7 +1,7 @@
-from enum import Enum, auto
+from enum import Enum
 from typing import Optional
 
-from odmantic import Model, EmbeddedModel
+from odmantic import EmbeddedModel, Model
 
 
 class Subject(EmbeddedModel):
@@ -10,15 +10,16 @@ class Subject(EmbeddedModel):
     subject_id: int
 
 
-class ClimateMode(Enum):
-    COOLING = auto()
-    HEATING = auto()
-    READY = auto()
+class ClimateMode(str, Enum):
+    BROKEN = "broken"
+    COOLING = "cooling"
+    HEATING = "heating"
+    READY = "ready"
 
 
-class LightMode(Enum):
-    ON = auto()
-    OFF = auto()
+class LightMode(str, Enum):
+    ON = "on"
+    OFF = "off"
 
 
 class Cell(Model):
