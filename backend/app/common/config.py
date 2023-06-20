@@ -1,10 +1,9 @@
 from os import getenv
 from pathlib import Path
 
+from common.mqtt_service import MQTTService
 from motor.motor_asyncio import AsyncIOMotorClient  # type: ignore
 from odmantic import AIOEngine
-
-from app.common.mqtt_service import MQTTService
 
 file_directory: Path = Path.cwd()
 

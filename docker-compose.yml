@@ -46,6 +46,7 @@ services:
     ports:
       - "8000:8000"
     volumes:
+      - ./backend/common:/backend/common
       - ./backend/app:/backend/app
     environment:
       WATCHFILES_FORCE_POLLING: true
