@@ -8,6 +8,7 @@ from pydantic import ValidationError
 from starlette.status import HTTP_400_BAD_REQUEST, HTTP_404_NOT_FOUND
 
 from app.common.config import engine, hub_id, mqtt_service
+from app.models.cells_db import Cell
 from app.models.devices_db import Device, DeviceStatus
 from common.types import DeviceInfo
 from common.utils import id_from_message
@@ -59,13 +60,22 @@ async def handle_pairing_ready(message: Message) -> None:
 
 
 @router.put("/{device_id}/pair")
-async def pair_device(device_id: ObjectId) -> None:
+async def pair_device(device_id: ObjectId, cell_id: ObjectId) -> None:
+    cell = await engine.find_one(Cell, Cell.id == cell_id)
+
+    if cell is None:
+        raise HTTPException(status_code=HTTP_404_NOT_FOUND, detail="Cell not found")
+
     device = await engine.find_one(Device, Device.id == device_id)
 
     if device is None:
-        raise HTTPException(status_code=HTTP_404_NOT_FOUND)
+        raise HTTPException(status_code=HTTP_404_NOT_FOUND, detail="Device not found")
     if device.status != DeviceStatus.READY:
         raise HTTPException(status_code=HTTP_400_BAD_REQUEST, detail="Wrong state")
+
+    cell.devices.append(device.device_type)
+    device.cell_id = cell.id
+    await engine.save(cell)
 
     await mqtt_service.publish(f"pairing/start/{device.device_id}", hub_id)
     device.status = DeviceStatus.PAIRING
@@ -80,7 +90,7 @@ async def handle_pairing_confirm(message: Message) -> None:
     if device is None:
         await mqtt_service.publish(f"pairing/cancel/{device_id}", hub_id)
     else:
-        if mqtt_service.client is not None:  # TODO better way
+        if mqtt_service.client is not None:
             await mqtt_service.client.subscribe(device.device_topic)
         device.status = DeviceStatus.PAIRED
         device.mark_active()

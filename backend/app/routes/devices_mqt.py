@@ -5,8 +5,10 @@ from datetime import datetime
 from typing import Protocol
 
 from asyncio_mqtt import Message
+from pydantic import parse_raw_as
 
 from app.common.config import engine, hub_id, mqtt_service
+from app.models.cells_db import Cell, Subject
 from app.models.devices_db import Device, DeviceStatus
 from common.mqtt_service import MQTTHandlerProtocol, MQTTRouter
 from common.types import DeviceType
@@ -15,7 +17,11 @@ router = MQTTRouter()
 
 
 class DeviceProtocol(Protocol):
-    async def __call__(self, device: Device, message: Message) -> None:  # noqa: U100
+    async def __call__(
+        self,
+        cell: Cell | None,  # noqa: U100
+        message: Message,  # noqa: U100
+    ) -> None:
         pass
 
 
@@ -31,7 +37,12 @@ def device_parser() -> Callable[[DeviceProtocol], MQTTHandlerProtocol]:
             if device is None:
                 await mqtt_service.publish(f"pairing/cancel/{device_id}", hub_id)
             else:
-                await function(device, message)
+                cell = await engine.find_one(Cell, Cell.id == device.cell_id)
+                await function(cell, message)
+                if cell is not None:
+                    await engine.save(cell)
+                device.mark_active()
+                await engine.save(device)
 
         return device_parser_inner
 
@@ -40,10 +51,35 @@ def device_parser() -> Callable[[DeviceProtocol], MQTTHandlerProtocol]:
 
 @router.route(f"{DeviceType.ECHO.value}/#", subscribe=False)
 @device_parser()
-async def handle_echo(device: Device, message: Message) -> None:
-    device.mark_active()
-    await engine.save(device)
+async def handle_echo(_: Cell, message: Message) -> None:
     logging.info(message.payload)
+
+
+@router.route(f"{DeviceType.TEMPERATURE_SENSOR.value}/#", subscribe=False)
+@device_parser()
+async def handle_temperature(cell: Cell, message: Message) -> None:
+    if not isinstance(message.payload, float):
+        return
+
+    cell.temperature = message.payload
+
+
+@router.route(f"{DeviceType.ILLUMINATION_SENSOR.value}/#", subscribe=False)
+@device_parser()
+async def handle_illumination(cell: Cell, message: Message) -> None:
+    if not isinstance(message.payload, float):
+        return
+
+    cell.illumination = message.payload
+
+
+@router.route(f"{DeviceType.CAMERA.value}/#", subscribe=False)
+@device_parser()
+async def handle_camera(cell: Cell, message: Message) -> None:
+    if not isinstance(message.payload, (bytes, str)):
+        return
+
+    cell.subjects = parse_raw_as(list[Subject], message.payload)
 
 
 async def expiry_cleaner() -> None:

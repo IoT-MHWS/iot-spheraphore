@@ -36,4 +36,4 @@ class Cell(Model):
 
     subjects: Optional[list[Subject]] = None
 
-    devices: Optional[list[DeviceType]] = None
+    devices: list[DeviceType] = []

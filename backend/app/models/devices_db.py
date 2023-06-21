@@ -1,7 +1,8 @@
 from datetime import datetime, timedelta
 from enum import Enum
+from typing import Optional
 
-from odmantic import Model
+from odmantic import Model, ObjectId
 
 from common.types import DeviceType
 
@@ -19,6 +20,8 @@ class Device(Model):
     device_id: str
     device_type: DeviceType
     interval: float
+
+    cell_id: Optional[ObjectId] = None
 
     status: DeviceStatus
     expiry: datetime
