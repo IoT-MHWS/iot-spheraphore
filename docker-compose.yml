@@ -80,5 +80,25 @@ services:
       PYTHONBUFFERED: true
       MOSQUITTO_HOST: mosquitto
 
+  temperature:
+    profiles:
+      - temperature
+    depends_on:
+      - mosquitto
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        FOLDER: devices
+    image: iot-mwhs/spheraphore
+    restart: always
+    entrypoint: python -m devices.temperature
+    volumes:
+      - ./backend/common:/backend/common
+      - ./backend/devices:/backend/devices
+    environment:
+      PYTHONBUFFERED: true
+      MOSQUITTO_HOST: mosquitto
+
 volumes:
   mosquitto-data:
