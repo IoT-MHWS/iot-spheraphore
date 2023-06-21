@@ -128,7 +128,7 @@ async def expiry_cleaner() -> None:
             device.status = DeviceStatus.DEAD
             await engine.save(device)
 
-        await sleep(10)
+        await sleep(100)
 
 
 async def reconnect_devices() -> None:
