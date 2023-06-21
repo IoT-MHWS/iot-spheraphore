@@ -8,7 +8,7 @@ from asyncio_mqtt import Message
 from pydantic import parse_raw_as
 
 from app.common.config import engine, hub_id, mqtt_service
-from app.models.cells_db import Cell, ClimateMode, Subject
+from app.models.cells_db import Cell, ClimateMode, LightMode, Subject
 from app.models.devices_db import Device, DeviceStatus
 from common.mqtt_service import MQTTHandlerProtocol, MQTTRouter
 from common.types import DeviceType
@@ -98,6 +98,10 @@ async def handle_illumination(cell: Cell, message: Message) -> None:
         logging.warning("Bad data for illumination", exc_info=e)
 
     cell.illumination = value
+    if cell.illumination < 500:
+        cell.light_mode = LightMode.ON
+    else:
+        cell.light_mode = LightMode.OFF
 
 
 @router.route(f"{DeviceType.CAMERA.value}/#", subscribe=False)

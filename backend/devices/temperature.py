@@ -34,7 +34,11 @@ class TemperatureSensor(Device):
         self.route(f"climate/ready/{self.device_id}")(self.handle_ready)
 
     async def send_events(self) -> None:
-        self.temperature += self.delta
+        self.temperature = await self.request_grpc(
+            "GetAirTemperature",
+            self.temperature,
+            self.delta,
+        )
         if self.hub_id is not None:
             logging.info(f"Sending temperature: {self.temperature}")
             await self.publish(f"temperature-sensor/{self.device_id}", self.temperature)

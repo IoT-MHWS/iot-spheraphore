@@ -13,9 +13,13 @@ class IlluminationSensor(Device):
 
     def __init__(self) -> None:
         super().__init__()
-        self.illumination: float = 21.1
+        self.illumination: float = 1000
 
     async def send_events(self) -> None:
+        self.illumination = await self.request_grpc(
+            "GetIllumination",
+            self.illumination,
+        )
         if self.hub_id is not None:
             logging.info(f"Sending temperature: {self.illumination}")
             await self.publish(

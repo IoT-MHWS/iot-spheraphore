@@ -62,3 +62,6 @@ class Device(MQTTService):
         async with TaskGroup() as task_group:
             task_group.create_task(super().listen(**subscribe_kwargs))
             task_group.create_task(self.sender_loop())
+
+    async def request_grpc(self, _: str, source: float, data: float = 0) -> float:
+        return source + data
