@@ -2,6 +2,8 @@ from enum import Enum
 
 from odmantic import Model
 
+from common.types import DeviceType
+
 
 class DeviceStatus(str, Enum):
     READY = "ready"
@@ -12,4 +14,7 @@ class DeviceStatus(str, Enum):
 
 class Device(Model):
     device_id: str
+    device_type: DeviceType
+    interval: float
+
     status: DeviceStatus

@@ -5,12 +5,15 @@ from os import getenv
 from asyncio_mqtt import Message
 from asyncio_mqtt.types import PayloadType
 
+from common.types import DeviceType
 from devices.base import Device
 
 logging.basicConfig(level=logging.INFO)
 
 
 class EchoDevice(Device):
+    device_type = DeviceType.ECHO
+
     def __init__(self) -> None:
         super().__init__()
         self.payload: PayloadType | None = None
