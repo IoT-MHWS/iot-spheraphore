@@ -3,6 +3,8 @@ from typing import Optional
 
 from odmantic import EmbeddedModel, Model
 
+from common.types import DeviceType
+
 
 class Subject(EmbeddedModel):
     x: int
@@ -22,16 +24,11 @@ class LightMode(str, Enum):
     OFF = "off"
 
 
-class DeviceTypes(str, Enum):
-    TEMPERATURE_SENSOR = "temperature-sensor"
-    ILLUMINATION_SENSOR = "illumination-sensor"
-    CAMERA = "camera"
-
-
 class Cell(Model):
     x: int
     y: int
 
+    required_temperature: Optional[float] = None
     temperature: Optional[float] = None
     climate_mode: Optional[ClimateMode] = None
 
@@ -40,4 +37,4 @@ class Cell(Model):
 
     subjects: Optional[list[Subject]] = None
 
-    devises: Optional[list[DeviceTypes]] = None
+    devices: list[DeviceType] = []
