@@ -23,7 +23,11 @@ async def perform_device_scan() -> None:
 @mqtt_service.route(f"pairing/ready/{hub_id}")
 async def handle_pairing_ready(message: Message) -> None:
     device_id = id_from_message(message)
-    device = Device(device_id=device_id, status=DeviceStatus.READY)
+    device = await engine.find_one(Device, Device.device_id == device_id)
+    if device is None:
+        device = Device(device_id=device_id, status=DeviceStatus.READY)
+    elif device.status in {DeviceStatus.READY, DeviceStatus.DEAD}:
+        device.status = DeviceStatus.READY
     await engine.save(device)
 
 
@@ -45,6 +49,8 @@ async def pair_device(device_id: ObjectId) -> None:
 async def handle_pairing_confirm(message: Message) -> None:
     device_id = id_from_message(message)
     device = await engine.find_one(Device, Device.device_id == device_id)
-    if device is not None:
+    if device is None:
+        await mqtt_service.publish(f"pairing/cancel/{device_id}", hub_id)
+    else:
         device.status = DeviceStatus.PAIRED
         await engine.save(device)

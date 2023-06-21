@@ -30,9 +30,16 @@ class Device(MQTTService):
         logging.info("Pairing start initiated, confirming")
         await self.publish(f"pairing/confirm/{self.hub_id}", self.device_id)
 
+    async def pairing_cancel(self, message: Message) -> None:
+        if self.hub_id is None or self.hub_id != id_from_message(message):
+            return
+        logging.warning(f"Pairing error from {self.hub_id}, cancelling")
+        self.hub_id = None
+
     def route_all(self) -> None:
         self.route("pairing/scan")(self.pairing_scan_ready)
         self.route(f"pairing/start/{self.device_id}")(self.pairing_connect)
+        self.route(f"pairing/cancel/{self.device_id}")(self.pairing_cancel)
 
     async def send_events(self) -> None:
         raise NotImplementedError
