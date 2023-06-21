@@ -85,3 +85,33 @@ async def handle_pairing_confirm(message: Message) -> None:
         device.status = DeviceStatus.PAIRED
         device.mark_active()
         await engine.save(device)
+
+
+async def unpair(device: Device) -> None:
+    await mqtt_service.publish(f"pairing/cancel/{device.device_id}", hub_id)
+    if mqtt_service.client is not None:
+        await mqtt_service.client.unsubscribe(device.device_topic)
+    device.status = DeviceStatus.DEAD
+    await engine.save(device)
+
+
+@router.delete("/{device_id}/pair")
+async def unpair_device(device_id: ObjectId) -> None:
+    device = await engine.find_one(Device, Device.id == device_id)
+
+    if device is None:
+        raise HTTPException(status_code=HTTP_404_NOT_FOUND)
+    if device.status != DeviceStatus.PAIRED:
+        raise HTTPException(status_code=HTTP_400_BAD_REQUEST, detail="Wrong state")
+
+    await unpair(device)
+
+
+@router.delete("/{device_id}")
+async def remove_device(device_id: ObjectId) -> None:
+    device = await engine.find_one(Device, Device.id == device_id)
+    if device is None:
+        raise HTTPException(status_code=HTTP_404_NOT_FOUND)
+    if device.status == DeviceStatus.PAIRED:
+        await unpair(device)
+    await engine.remove(Device, Device.id == device_id)
