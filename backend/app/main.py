@@ -9,13 +9,14 @@ from starlette.middleware.cors import CORSMiddleware
 
 from app.common.config import engine, mqtt_host, mqtt_service
 from app.models.cells_db import Cell
+from app.models.devices_db import Device
 from app.routes import cells_mub, cells_rst
 
 
 @asynccontextmanager
 async def lifespan(_: FastAPI) -> AsyncIterator[None]:
     await engine.configure_database(
-        [Cell],
+        [Cell, Device],  # type: ignore
         update_existing_indexes=True,
     )
 
