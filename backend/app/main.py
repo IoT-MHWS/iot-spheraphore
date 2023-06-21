@@ -3,14 +3,15 @@ from asyncio import CancelledError, get_event_loop
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager, suppress
 
-from asyncio_mqtt import Message
 from fastapi import FastAPI
 from starlette.middleware.cors import CORSMiddleware
 
 from app.common.config import engine, mqtt_host, mqtt_service
 from app.models.cells_db import Cell
 from app.models.devices_db import Device
-from app.routes import cells_mub, cells_rst, devices_rst
+from app.routes import cells_mub, cells_rst, devices_mqt, devices_rst
+
+logging.basicConfig(level=logging.INFO)
 
 
 @asynccontextmanager
@@ -30,6 +31,8 @@ async def lifespan(_: FastAPI) -> AsyncIterator[None]:
         await task
 
 
+mqtt_service.include_router(devices_mqt.router)
+
 # noinspection PyTypeChecker
 app = FastAPI(lifespan=lifespan)
 
@@ -44,11 +47,6 @@ app.add_middleware(
 app.include_router(cells_mub.router)
 app.include_router(cells_rst.router)
 app.include_router(devices_rst.router)
-
-
-@mqtt_service.route("test/put")
-async def test_m(message: Message) -> None:
-    logging.error(message.payload)
 
 
 @app.post("/test/mosquitto", tags=["test"])

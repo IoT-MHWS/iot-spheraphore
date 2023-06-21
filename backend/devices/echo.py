@@ -23,12 +23,11 @@ class EchoDevice(Device):
 
     def route_all(self) -> None:
         super().route_all()
-        self.route("test/get")(self.handle_echo)
+        self.route("test/get")(self.handle_echo)  # type: ignore
 
     async def send_events(self) -> None:
-        if self.payload is not None:
-            await self.publish("test/put", self.payload)
-            self.payload = None
+        if self.hub_id is not None:
+            await self.publish(f"echo/{self.device_id}", self.payload)
 
 
 if __name__ == "__main__":
