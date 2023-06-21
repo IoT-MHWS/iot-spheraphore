@@ -1,9 +1,13 @@
+import logging
 from asyncio import run
 from os import getenv
 
 from asyncio_mqtt import Message
 from asyncio_mqtt.types import PayloadType
+
 from devices.base import Device
+
+logging.basicConfig(level=logging.INFO)
 
 
 class EchoDevice(Device):
