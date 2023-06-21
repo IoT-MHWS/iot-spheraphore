@@ -1,5 +1,7 @@
 import logging
+from asyncio import sleep
 from collections.abc import Callable
+from datetime import datetime
 from typing import Protocol
 
 from asyncio_mqtt import Message
@@ -42,3 +44,25 @@ async def handle_echo(device: Device, message: Message) -> None:
     device.mark_active()
     await engine.save(device)
     logging.info(message.payload)
+
+
+async def expiry_cleaner() -> None:
+    while True:  # noqa: WPS457
+        if mqtt_service.client is None:
+            await sleep(10)
+            continue
+
+        logging.info("Expired device purge in progress")
+
+        async for device in engine.find(
+            Device,
+            Device.status != DeviceStatus.DEAD,
+            Device.expiry < datetime.utcnow(),
+        ):
+            logging.info(f"Device {device.id}/{device.device_id} has been expired")
+            await mqtt_service.publish(f"pairing/cancel/{device.device_id}", hub_id)
+            await mqtt_service.client.unsubscribe(device.device_topic)
+            device.status = DeviceStatus.DEAD
+            await engine.save(device)
+
+        await sleep(10)

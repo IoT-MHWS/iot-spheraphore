@@ -22,13 +22,17 @@ async def lifespan(_: FastAPI) -> AsyncIterator[None]:
     )
 
     loop = get_event_loop()
-    task = loop.create_task(mqtt_service.run_durable(mqtt_host=mqtt_host))
+    tasks = [
+        loop.create_task(mqtt_service.run_durable(mqtt_host=mqtt_host)),
+        loop.create_task(devices_mqt.expiry_cleaner()),
+    ]
 
     yield
 
-    task.cancel()
-    with suppress(CancelledError):
-        await task
+    for task in tasks:
+        task.cancel()
+        with suppress(CancelledError):
+            await task
 
 
 mqtt_service.include_router(devices_mqt.router)
