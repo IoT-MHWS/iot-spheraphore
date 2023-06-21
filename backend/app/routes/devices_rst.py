@@ -1,4 +1,5 @@
 import logging
+from datetime import datetime, timedelta
 
 from asyncio_mqtt import Message
 from fastapi import APIRouter, HTTPException
@@ -41,6 +42,7 @@ async def handle_pairing_ready(message: Message) -> None:
         "device_type": device_info.type,
         "interval": device_info.interval,
         "status": DeviceStatus.READY,
+        "expiry": datetime.utcnow() + timedelta(minutes=1),
     }
 
     device = await engine.find_one(Device, Device.device_id == device_info.id)
@@ -67,6 +69,7 @@ async def pair_device(device_id: ObjectId) -> None:
 
     await mqtt_service.publish(f"pairing/start/{device.device_id}", hub_id)
     device.status = DeviceStatus.PAIRING
+    device.expiry = datetime.utcnow() + timedelta(minutes=1)
     await engine.save(device)
 
 
@@ -77,5 +80,8 @@ async def handle_pairing_confirm(message: Message) -> None:
     if device is None:
         await mqtt_service.publish(f"pairing/cancel/{device_id}", hub_id)
     else:
+        if mqtt_service.client is not None:  # TODO better way
+            await mqtt_service.client.subscribe(device.device_topic)
         device.status = DeviceStatus.PAIRED
+        device.mark_active()
         await engine.save(device)
