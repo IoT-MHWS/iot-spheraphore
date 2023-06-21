@@ -66,3 +66,20 @@ async def expiry_cleaner() -> None:
             await engine.save(device)
 
         await sleep(10)
+
+
+async def reconnect_devices() -> None:
+    while True:
+        if mqtt_service.client is not None:
+            break
+        await sleep(10)
+
+    async for device in engine.find(
+        Device,
+        Device.status == DeviceStatus.PAIRED,
+        Device.expiry >= datetime.utcnow(),
+    ):
+        await mqtt_service.client.subscribe(device.device_topic)
+        device.mark_active()
+        await engine.save(device)
+        logging.info(f"Device {device.id}/{device.device_id} reconnected successfully")

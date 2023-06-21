@@ -25,6 +25,7 @@ async def lifespan(_: FastAPI) -> AsyncIterator[None]:
     tasks = [
         loop.create_task(mqtt_service.run_durable(mqtt_host=mqtt_host)),
         loop.create_task(devices_mqt.expiry_cleaner()),
+        loop.create_task(devices_mqt.reconnect_devices()),
     ]
 
     yield
