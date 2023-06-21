@@ -10,7 +10,7 @@ from starlette.middleware.cors import CORSMiddleware
 from app.common.config import engine, mqtt_host, mqtt_service
 from app.models.cells_db import Cell
 from app.models.devices_db import Device
-from app.routes import cells_mub, cells_rst
+from app.routes import cells_mub, cells_rst, devices_rst
 
 
 @asynccontextmanager
@@ -43,6 +43,7 @@ app.add_middleware(
 
 app.include_router(cells_mub.router)
 app.include_router(cells_rst.router)
+app.include_router(devices_rst.router)
 
 
 @mqtt_service.route("test/put")
