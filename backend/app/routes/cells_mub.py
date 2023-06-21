@@ -36,7 +36,7 @@ class CellUpdate(BaseModel):
     devises: Optional[list[DeviceType]] = None
 
 
-@router.put("/<cell_id>")
+@router.put("/{cell_id}")
 async def update_cell(data: CellUpdate, cell_id: ObjectId) -> Cell:
     cell = await engine.find_one(Cell, Cell.id == cell_id)
     if cell is None:
