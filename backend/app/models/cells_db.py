@@ -28,6 +28,7 @@ class Cell(Model):
     x: int
     y: int
 
+    required_temperature: Optional[float] = None
     temperature: Optional[float] = None
     climate_mode: Optional[ClimateMode] = None
 
