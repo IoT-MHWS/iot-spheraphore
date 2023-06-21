@@ -12,14 +12,10 @@ class MQTTHandlerProtocol(Protocol):
         pass
 
 
-class MQTTService:
+class MQTTRouter:
     def __init__(self) -> None:
-        self.client: Client | None = None
         self.subscriptions: list[str] = []
         self.handlers: dict[str, MQTTHandlerProtocol] = {}
-
-    def setup(self, client: Client) -> None:
-        self.client = client
 
     def subscribe(self, topic: str) -> None:
         self.subscriptions.append(topic)
@@ -36,6 +32,19 @@ class MQTTService:
             self.handlers[topic] = handler
 
         return route_wrapper
+
+
+class MQTTService(MQTTRouter):
+    def __init__(self) -> None:
+        super().__init__()
+        self.client: Client | None = None
+
+    def include_router(self, router: MQTTRouter) -> None:
+        self.subscriptions.extend(router.subscriptions)
+        self.handlers.update(router.handlers)
+
+    def setup(self, client: Client) -> None:
+        self.client = client
 
     async def _handle_one(self, message: Message) -> None:
         for topic, handler in self.handlers.items():
@@ -58,7 +67,7 @@ class MQTTService:
     async def run_durable(
         self,
         mqtt_host: str,
-        interval: int = 10,
+        interval: int = 4,
         **subscribe_kwargs: Any,
     ) -> None:
         reconnecting: bool = False
@@ -73,6 +82,7 @@ class MQTTService:
             except MqttError:
                 reconnecting = True
                 logging.error(f"Connection lost. Reconnecting in {interval} seconds...")
+                self.client = None
                 await sleep(interval)
 
     async def publish(self, topic: str, payload: PayloadType, **kwargs: Any) -> None:
