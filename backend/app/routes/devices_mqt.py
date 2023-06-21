@@ -90,10 +90,14 @@ async def handle_temperature(device: Device, cell: Cell, message: Message) -> No
 @router.route(f"{DeviceType.ILLUMINATION_SENSOR.value}/#", subscribe=False)
 @device_parser()
 async def handle_illumination(cell: Cell, message: Message) -> None:
-    if not isinstance(message.payload, float):
+    if not isinstance(message.payload, bytes):
         return
+    try:
+        value = float(message.payload.decode("utf-8"))
+    except ValueError as e:
+        logging.warning("Bad data for illumination", exc_info=e)
 
-    cell.illumination = message.payload
+    cell.illumination = value
 
 
 @router.route(f"{DeviceType.CAMERA.value}/#", subscribe=False)

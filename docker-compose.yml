@@ -100,5 +100,25 @@ services:
       PYTHONBUFFERED: true
       MOSQUITTO_HOST: mosquitto
 
+  illumination:
+    profiles:
+      - illumination
+    depends_on:
+      - mosquitto
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        FOLDER: devices
+    image: iot-mwhs/spheraphore
+    restart: always
+    entrypoint: python -m devices.illumination
+    volumes:
+      - ./backend/common:/backend/common
+      - ./backend/devices:/backend/devices
+    environment:
+      PYTHONBUFFERED: true
+      MOSQUITTO_HOST: mosquitto
+
 volumes:
   mosquitto-data:
