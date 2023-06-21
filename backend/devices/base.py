@@ -14,10 +14,10 @@ class Device(MQTTService):
     device_type: DeviceType
     sender_sleep_interval: float = 1
 
-    def __init__(self) -> None:
+    def __init__(self, device_id: str | None = None) -> None:
         super().__init__()
         self.hub_id: str | None = None
-        self.device_id: str = uuid4().hex
+        self.device_id: str = device_id or uuid4().hex
 
     def device_info(self) -> DeviceInfo:
         return DeviceInfo(

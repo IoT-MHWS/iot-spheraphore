@@ -15,8 +15,8 @@ class EchoDevice(Device):
     device_type = DeviceType.ECHO
 
     def __init__(self) -> None:
-        super().__init__()
-        self.payload: PayloadType | None = None
+        super().__init__("echo")
+        self.payload: PayloadType = None
 
     async def handle_echo(self, message: Message) -> None:
         self.payload = message.payload
